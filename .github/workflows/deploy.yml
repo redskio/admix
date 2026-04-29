@@ -34,6 +34,32 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: /admix
+          GITHUB_ACTIONS: "true"
+
+      - name: Fix 404.html basePath (replace with redirect)
+        run: |
+          cat > out/404.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="ko">
+          <head>
+            <meta charset="utf-8">
+            <meta http-equiv="refresh" content="0; url=/admix/">
+            <script>
+              var path = window.location.pathname;
+              if (path.startsWith('/admix/')) {
+                // valid subpath — let Next.js SPA handle it via index
+                window.location.replace('/admix/');
+              } else {
+                window.location.replace('/admix/');
+              }
+            </script>
+            <title>AdMix</title>
+          </head>
+          <body>
+            <p>페이지를 찾을 수 없습니다. <a href="/admix/">홈으로</a></p>
+          </body>
+          </html>
+          EOF
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
