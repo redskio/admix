@@ -10,19 +10,28 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import useAuthStore from "@/lib/auth-store";
 
 export default function LoginPage() {
   const router = useRouter();
+  const authStore = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    // Mock auth — navigate to dashboard after brief delay
+    setError("");
     setTimeout(() => {
-      router.push("/dashboard");
+      const success = authStore.login(email, password);
+      if (success) {
+        router.push("/dashboard");
+      } else {
+        setError("이메일 또는 비밀번호가 올바르지 않습니다");
+        setLoading(false);
+      }
     }, 600);
   }
 
@@ -72,7 +81,7 @@ export default function LoginPage() {
                     비밀번호
                   </Label>
                   <Link
-                    href="#"
+                    href="/forgot-password"
                     className="text-xs text-violet-600 hover:text-violet-700 font-medium"
                   >
                     비밀번호 찾기
@@ -91,6 +100,18 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
+
+              {/* Error message */}
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                  {error}
+                </p>
+              )}
+
+              {/* Demo hint */}
+              <p className="text-xs text-gray-400 bg-gray-50 border border-gray-200 rounded-md px-3 py-2">
+                테스트 계정: 아무 이메일 + 비밀번호 <span className="font-mono font-medium text-gray-600">test1234</span>
+              </p>
 
               {/* Submit */}
               <Button

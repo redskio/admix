@@ -3,21 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, Lock, Building2, UserPlus } from "lucide-react";
+import { User, Mail, Lock, Building2, UserPlus, Megaphone, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import useAuthStore from "@/lib/auth-store";
+
+type Role = "advertiser" | "publisher";
 
 export default function SignupPage() {
   const router = useRouter();
+  const authStore = useAuthStore();
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     company: "",
   });
+  const [role, setRole] = useState<Role>("advertiser");
   const [loading, setLoading] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -27,9 +32,9 @@ export default function SignupPage() {
   function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    // Mock signup — navigate to dashboard
     setTimeout(() => {
-      router.push("/dashboard");
+      authStore.signup(form.name, form.email, form.password, form.company, role);
+      router.push(role === "publisher" ? "/publisher/dashboard" : "/dashboard");
     }, 700);
   }
 
@@ -90,6 +95,46 @@ export default function SignupPage() {
 
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-5">
+              {/* Role selector */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">역할 선택</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRole("advertiser")}
+                    className={cn(
+                      "flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all text-left",
+                      role === "advertiser"
+                        ? "border-violet-500 bg-violet-50 text-violet-700"
+                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                    )}
+                  >
+                    <Megaphone className={cn("h-6 w-6", role === "advertiser" ? "text-violet-600" : "text-gray-400")} />
+                    <div>
+                      <p className="text-sm font-semibold leading-tight">광고주</p>
+                      <p className="text-xs text-gray-400 mt-0.5">광고 집행 · 캠페인 관리</p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setRole("publisher")}
+                    className={cn(
+                      "flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all text-left",
+                      role === "publisher"
+                        ? "border-violet-500 bg-violet-50 text-violet-700"
+                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                    )}
+                  >
+                    <LayoutGrid className={cn("h-6 w-6", role === "publisher" ? "text-violet-600" : "text-gray-400")} />
+                    <div>
+                      <p className="text-sm font-semibold leading-tight">매체사</p>
+                      <p className="text-xs text-gray-400 mt-0.5">인벤토리 · 수익 관리</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               {fields.map(({ id, label, type, placeholder, icon: Icon }) => (
                 <div key={id} className="space-y-1.5">
                   <Label htmlFor={id} className="text-sm font-medium text-gray-700">

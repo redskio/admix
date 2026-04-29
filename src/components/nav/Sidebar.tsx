@@ -1,21 +1,44 @@
 "use client"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
-  LayoutDashboard, Megaphone, ImageIcon, CreditCard, Zap, LogOut, Settings
+  LayoutDashboard, Megaphone, ImageIcon, CreditCard, Zap, LogOut, Settings, BarChart2
 } from "lucide-react"
-import { mockUser } from "@/lib/mock-data"
 
 const navItems = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
   { href: "/campaigns", label: "캠페인", icon: Megaphone },
   { href: "/creatives", label: "소재 관리", icon: ImageIcon },
+  { href: "/reports", label: "리포트", icon: BarChart2 },
   { href: "/billing", label: "정산", icon: CreditCard },
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  let userName = "김재우"
+  let userCompany = "WeirdSector"
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("admix-auth")
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed?.state?.user) {
+          userName = parsed.state.user.name
+          userCompany = parsed.state.user.company
+        }
+      }
+    } catch {}
+  }
+
+  function handleLogout() {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("admix-auth")
+    }
+    router.push("/")
+  }
 
   return (
     <aside className="fixed left-0 top-0 h-full w-60 bg-gray-950 flex flex-col z-40">
@@ -49,20 +72,23 @@ export default function Sidebar() {
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-bold">
-            {mockUser.name[0]}
+            {userName[0]}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{mockUser.name}</p>
-            <p className="text-xs text-gray-400 truncate">{mockUser.company}</p>
+            <p className="text-sm font-medium text-white truncate">{userName}</p>
+            <p className="text-xs text-gray-400 truncate">{userCompany}</p>
           </div>
         </div>
         <div className="mt-2 space-y-1">
           <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 w-full transition-colors">
             <Settings className="w-4 h-4" />설정
           </button>
-          <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 w-full transition-colors"
+          >
             <LogOut className="w-4 h-4" />로그아웃
-          </Link>
+          </button>
         </div>
       </div>
     </aside>
